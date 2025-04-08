@@ -9,7 +9,26 @@
     <p class="lead">Bienvenido a nuestra plataforma de juegos divertidos para aprender a leer y escribir.</p>
     <hr class="my-4">
     <p>Explora nuestras categorías y descubre juegos educativos para todas las edades.</p>
-    <a class="btn btn-primary btn-lg" href="{% url 'alfabetizacion:categorias' %}" role="button">Empezar a Jugar</a>
+    
+    <!-- Nueva sección de botones para juego directo -->
+    <div class="mt-4">
+        <h4 class="mb-3">Jugar al Abecedario:</h4>
+        <div class="btn-group btn-group-lg" role="group" aria-label="Niveles de dificultad">
+            <a href="{% url 'alfabetizacion:juego_alfabeto' %}?nivel=facil" class="btn btn-success mx-2">
+                <i class="fas fa-star"></i> Nivel Fácil
+            </a>
+            <a href="{% url 'alfabetizacion:juego_alfabeto' %}?nivel=medio" class="btn btn-warning mx-2">
+                <i class="fas fa-star"></i><i class="fas fa-star"></i> Nivel Medio
+            </a>
+            <a href="{% url 'alfabetizacion:juego_alfabeto' %}?nivel=dificil" class="btn btn-danger mx-2">
+                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> Nivel Difícil
+            </a>
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <a class="btn btn-outline-primary" href="{% url 'alfabetizacion:categorias' %}" role="button">Ver todas las categorías</a>
+    </div>
 </div>
 
 <div class="row mb-5">

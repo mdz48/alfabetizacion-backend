@@ -65,7 +65,22 @@ def jugar(request, juego_id):
 
 def juego_alfabeto(request):
     """Vista para el juego de aprendizaje del alfabeto"""
-    return render(request, 'alfabetizacion/juego_alfabeto.html')
+    nivel = request.GET.get('nivel', 'facil')  # Default to 'facil' if no level is specified
+    
+    # Validate that the level is one of the allowed values
+    if nivel not in ['facil', 'medio', 'dificil']:
+        nivel = 'facil'
+    
+    context = {
+        'nivel': nivel,
+        'titulo_nivel': {
+            'facil': 'Fácil',
+            'medio': 'Medio',
+            'dificil': 'Difícil'
+        }[nivel]
+    }
+    
+    return render(request, 'alfabetizacion/juego_alfabeto.html', context)
 
 @login_required
 def guardar_progreso(request, juego_id):

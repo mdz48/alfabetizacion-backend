@@ -28,50 +28,25 @@
                             <i class="fas fa-home"></i> Inicio
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="{% url 'alfabetizacion:categorias' %}">
-                            <i class="fas fa-th-large"></i> Categorías
-                        </a>
-                    </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link text-white dropdown-toggle" href="#" id="juegosDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-gamepad"></i> Juegos
+                        <a class="nav-link text-white dropdown-toggle" href="#" id="nivelDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-font"></i> Juego Alfabeto
                         </a>
-                        <div class="dropdown-menu" aria-labelledby="juegosDropdown">
-                            <a class="dropdown-item" href="{% url 'alfabetizacion:categorias' %}?nivel=facil">
-                                <i class="fas fa-star text-success"></i> Nivel Básico
+                        <div class="dropdown-menu" aria-labelledby="nivelDropdown">
+                            <a class="dropdown-item" href="{% url 'alfabetizacion:juego_alfabeto' %}?nivel=facil">
+                                <i class="fas fa-star text-success"></i> Nivel Fácil
                             </a>
-                            <a class="dropdown-item" href="{% url 'alfabetizacion:categorias' %}?nivel=medio">
-                                <i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i> Nivel Intermedio
+                            <a class="dropdown-item" href="{% url 'alfabetizacion:juego_alfabeto' %}?nivel=medio">
+                                <i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i> Nivel Medio
                             </a>
-                            <a class="dropdown-item" href="{% url 'alfabetizacion:categorias' %}?nivel=dificil">
-                                <i class="fas fa-star text-danger"></i><i class="fas fa-star text-danger"></i><i class="fas fa-star text-danger"></i> Nivel Avanzado
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="{% url 'alfabetizacion:categorias' %}?tipo=letras">
-                                <i class="fas fa-font"></i> Letras y Fonemas
-                            </a>
-                            <a class="dropdown-item" href="{% url 'alfabetizacion:categorias' %}?tipo=palabras">
-                                <i class="fas fa-align-left"></i> Palabras
-                            </a>
-                            <a class="dropdown-item" href="{% url 'alfabetizacion:categorias' %}?tipo=oraciones">
-                                <i class="fas fa-align-justify"></i> Oraciones
+                            <a class="dropdown-item" href="{% url 'alfabetizacion:juego_alfabeto' %}?nivel=dificil">
+                                <i class="fas fa-star text-danger"></i><i class="fas fa-star text-danger"></i><i class="fas fa-star text-danger"></i> Nivel Difícil
                             </a>
                         </div>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="#" data-toggle="modal" data-target="#juegosRapidosModal">
-                            <i class="fas fa-bolt"></i> <span class="badge badge-warning">¡Juega ahora!</span>
-                        </a>
                     </li>
                 </ul>
                 <ul class="navbar-nav ml-auto">
                     {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="{% url 'alfabetizacion:perfil' %}">
-                            <i class="fas fa-user-circle"></i> Mi Perfil
-                        </a>
-                    </li>
                     <li class="nav-item">
                         <a class="nav-link text-white" href="{% url 'logout' %}">
                             <i class="fas fa-sign-out-alt"></i> Salir
@@ -91,95 +66,6 @@
 
     <div class="container py-4">
         {% block content %}{% endblock %}
-    </div>
-
-    <!-- Modal de Juegos Rápidos -->
-    <div class="modal fade" id="juegosRapidosModal" tabindex="-1" role="dialog" aria-labelledby="juegosRapidosModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="juegosRapidosModalLabel"><i class="fas fa-bolt"></i> ¡Juegos Rápidos!</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <div class="card border-primary h-100">
-                                <div class="card-header bg-primary text-white text-center">
-                                    <h5><i class="fas fa-font"></i> Alfabeto</h5>
-                                </div>
-                                <div class="card-body text-center">
-                                    <p>Aprende las letras del alfabeto de forma divertida</p>
-                                    <a href="{% url 'alfabetizacion:categorias' %}?tipo=alfabeto" class="btn btn-outline-primary">¡Jugar!</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="card border-success h-100">
-                                <div class="card-header bg-success text-white text-center">
-                                    <h5><i class="fas fa-headphones"></i> Sonidos</h5>
-                                </div>
-                                <div class="card-body text-center">
-                                    <p>Asocia sonidos con sus letras y palabras correspondientes</p>
-                                    <a href="{% url 'alfabetizacion:categorias' %}?tipo=sonidos" class="btn btn-outline-success">¡Jugar!</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="card border-danger h-100">
-                                <div class="card-header bg-danger text-white text-center">
-                                    <h5><i class="fas fa-pen"></i> Escritura</h5>
-                                </div>
-                                <div class="card-body text-center">
-                                    <p>Practica la escritura con juegos interactivos</p>
-                                    <a href="{% url 'alfabetizacion:categorias' %}?tipo=escritura" class="btn btn-outline-danger">¡Jugar!</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-md-4 mb-3">
-                            <div class="card border-warning h-100">
-                                <div class="card-header bg-warning text-dark text-center">
-                                    <h5><i class="fas fa-spell-check"></i> Sílabas</h5>
-                                </div>
-                                <div class="card-body text-center">
-                                    <p>Aprende a formar sílabas y usarlas en palabras</p>
-                                    <a href="{% url 'alfabetizacion:categorias' %}?tipo=silabas" class="btn btn-outline-warning">¡Jugar!</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="card border-info h-100">
-                                <div class="card-header bg-info text-white text-center">
-                                    <h5><i class="fas fa-book"></i> Vocabulario</h5>
-                                </div>
-                                <div class="card-body text-center">
-                                    <p>Amplía tu vocabulario con palabras nuevas</p>
-                                    <a href="{% url 'alfabetizacion:categorias' %}?tipo=vocabulario" class="btn btn-outline-info">¡Jugar!</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="card border-dark h-100">
-                                <div class="card-header bg-dark text-white text-center">
-                                    <h5><i class="fas fa-random"></i> Aleatorio</h5>
-                                </div>
-                                <div class="card-body text-center">
-                                    <p>¡Juega a un juego aleatorio de nuestra colección!</p>
-                                    <a href="{% url 'alfabetizacion:categorias' %}?aleatorio=true" class="btn btn-outline-dark">¡Sorpréndeme!</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <footer class="bg-primary text-white py-4">
