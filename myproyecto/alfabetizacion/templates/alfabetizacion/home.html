@@ -1,0 +1,73 @@
+{% extends 'alfabetizacion/base.html' %}
+{% load static %}
+
+{% block title %}Juegos de Alfabetización Infantil{% endblock %}
+
+{% block content %}
+<div class="jumbotron rounded-lg" style="background-color: #FFEBCD; border: 5px dashed #FF7F50;">
+    <h1 class="display-4 text-primary">¡Aprende jugando!</h1>
+    <p class="lead">Bienvenido a nuestra plataforma de juegos divertidos para aprender a leer y escribir.</p>
+    <hr class="my-4">
+    <p>Explora nuestras categorías y descubre juegos educativos para todas las edades.</p>
+    <a class="btn btn-primary btn-lg" href="{% url 'alfabetizacion:categorias' %}" role="button">Empezar a Jugar</a>
+</div>
+
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="text-center mb-4">Categorías de Juegos</h2>
+    </div>
+    {% for categoria in categorias %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-primary categoria-card">
+            {% if categoria.imagen %}
+            <img src="{{ categoria.imagen.url }}" class="card-img-top" alt="{{ categoria.nombre }}">
+            {% else %}
+            <img src="{% static 'alfabetizacion/img/default-category.png' %}" class="card-img-top" alt="{{ categoria.nombre }}">
+            {% endif %}
+            <div class="card-body text-center">
+                <h5 class="card-title">{{ categoria.nombre }}</h5>
+                <p class="card-text">{{ categoria.descripcion|truncatewords:20 }}</p>
+                <a href="{% url 'alfabetizacion:categoria_detail' categoria.id %}" class="btn btn-primary">Ver juegos</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            No hay categorías disponibles todavía. ¡Pronto añadiremos más juegos!
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <h2 class="text-center mb-4">Juegos Destacados</h2>
+    </div>
+    {% for juego in juegos_destacados %}
+    <div class="col-md-3 mb-4">
+        <div class="card h-100 border-success juego-card">
+            {% if juego.imagen %}
+            <img src="{{ juego.imagen.url }}" class="card-img-top" alt="{{ juego.titulo }}">
+            {% else %}
+            <img src="{% static 'alfabetizacion/img/default-game.png' %}" class="card-img-top" alt="{{ juego.titulo }}">
+            {% endif %}
+            <div class="card-body text-center">
+                <h5 class="card-title">{{ juego.titulo }}</h5>
+                <p class="card-text">{{ juego.descripcion|truncatewords:10 }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge badge-pill badge-primary">{{ juego.get_nivel_display }}</span>
+                    <a href="{% url 'alfabetizacion:jugar' juego.id %}" class="btn btn-success">¡Jugar!</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            No hay juegos destacados disponibles todavía.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

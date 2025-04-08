@@ -1,0 +1,56 @@
+{% extends 'alfabetizacion/base.html' %}
+{% load static %}
+
+{% block title %}Categorías de Juegos - Alfabetización{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="bg-light p-4 rounded-lg shadow-sm">
+            <h1 class="text-primary">Categorías de Juegos</h1>
+            <p class="lead">Explora nuestras diferentes categorías y encuentra juegos divertidos para aprender.</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {% for categoria in categorias %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 border-primary categoria-card">
+            {% if categoria.imagen %}
+            <img src="{{ categoria.imagen.url }}" class="card-img-top" alt="{{ categoria.nombre }}">
+            {% else %}
+            <img src="{% static 'alfabetizacion/img/default-category.png' %}" class="card-img-top" alt="{{ categoria.nombre }}" onerror="this.src='https://via.placeholder.com/350x150?text=Categoría'">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ categoria.nombre }}</h5>
+                <p class="card-text">{{ categoria.descripcion|truncatewords:25 }}</p>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <span class="badge badge-info">{{ categoria.num_juegos }} juego{{ categoria.num_juegos|pluralize }}</span>
+                    <a href="{% url 'alfabetizacion:categoria_detail' categoria.id %}" class="btn btn-primary">Ver juegos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <h4 class="alert-heading">No hay categorías disponibles</h4>
+            <p>Todavía no hemos agregado categorías de juegos. ¡Vuelve pronto!</p>
+            <hr>
+            <p class="mb-0">
+                <a href="{% url 'alfabetizacion:home' %}" class="btn btn-primary">Volver al inicio</a>
+            </p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if categorias %}
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <a href="{% url 'alfabetizacion:home' %}" class="btn btn-outline-primary">Volver al inicio</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

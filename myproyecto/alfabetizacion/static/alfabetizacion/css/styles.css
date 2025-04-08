@@ -1,0 +1,90 @@
+/* Estilos generales */
+body {
+    font-family: 'Comic Neue', cursive;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* Navbar */
+.navbar {
+    border-bottom: 5px solid #FFC107;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Cards */
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.categoria-card .card-img-top {
+    height: 180px;
+    object-fit: cover;
+}
+
+.juego-card .card-img-top {
+    height: 140px;
+    object-fit: cover;
+}
+
+/* Botones */
+.btn {
+    border-radius: 10px;
+    font-weight: bold;
+    padding: 8px 20px;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+/* Jumbotron personalizado */
+.jumbotron {
+    background-image: url('../img/pattern.png');
+    background-repeat: repeat;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Animaciones */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+.float-animation {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Perfil de usuario */
+.perfil-card {
+    border-left: 5px solid #007bff;
+}
+
+/* Nivel de dificultad */
+.badge-pill {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+}
+
+/* Footer */
+footer {
+    border-top: 5px solid #FFC107;
+}

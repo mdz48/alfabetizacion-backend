@@ -1,0 +1,222 @@
+{% extends 'alfabetizacion/base.html' %}
+{% load static %}
+
+{% block title %}{{ juego.titulo }} - Jugar{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pregunta-container {
+        display: none;
+    }
+    .pregunta-container.active {
+        display: block;
+    }
+    .respuesta-btn {
+        min-height: 100px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        transition: all 0.3s;
+        border: 3px solid #ddd;
+    }
+    .respuesta-btn:hover {
+        transform: scale(1.05);
+        border-color: #007bff;
+    }
+    .respuesta-btn.correcta {
+        background-color: #d4edda;
+        border-color: #28a745;
+    }
+    .respuesta-btn.incorrecta {
+        background-color: #f8d7da;
+        border-color: #dc3545;
+    }
+    .pregunta-imagen {
+        max-height: 300px;
+        object-fit: contain;
+    }
+    .puntuacion {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #007bff;
+    }
+    .progress {
+        height: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card border-primary mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h3>{{ juego.titulo }}</h3>
+        <div>
+            <span class="badge badge-light">Nivel: {{ juego.get_nivel_display }}</span>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <div id="juego-container">
+            <div class="mb-3">
+                <div class="progress mb-2">
+                    <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <div>Pregunta: <span id="pregunta-actual">1</span>/<span id="total-preguntas">{{ preguntas.count }}</span></div>
+                    <div>Puntuación: <span id="puntuacion" class="puntuacion">0</span></div>
+                </div>
+            </div>
+            
+            {% for pregunta in preguntas %}
+            <div id="pregunta-{{ forloop.counter }}" class="pregunta-container {% if forloop.first %}active{% endif %}" data-id="{{ pregunta.id }}">
+                <div class="alert alert-primary mb-4">
+                    <h4>{{ pregunta.texto }}</h4>
+                </div>
+                
+                {% if pregunta.imagen %}
+                <div class="text-center mb-4">
+                    <img src="{{ pregunta.imagen.url }}" alt="Imagen para {{ pregunta.texto }}" class="pregunta-imagen img-fluid rounded">
+                </div>
+                {% endif %}
+                
+                {% if pregunta.audio %}
+                <div class="text-center mb-4">
+                    <audio controls>
+                        <source src="{{ pregunta.audio.url }}" type="audio/mpeg">
+                        Tu navegador no soporta el elemento de audio.
+                    </audio>
+                </div>
+                {% endif %}
+                
+                <div class="row respuestas-container">
+                    {% for respuesta in pregunta.respuestas.all %}
+                    <div class="col-md-6">
+                        <button class="btn btn-light respuesta-btn w-100" 
+                                data-id="{{ respuesta.id }}" 
+                                data-correcta="{{ respuesta.es_correcta|lower }}">
+                            {% if respuesta.imagen %}
+                            <img src="{{ respuesta.imagen.url }}" alt="{{ respuesta.texto }}" class="img-fluid mb-2" style="max-height: 80px;">
+                            {% endif %}
+                            <span>{{ respuesta.texto }}</span>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div id="resultado-final" class="pregunta-container text-center">
+                <h2 class="mb-4">¡Juego completado!</h2>
+                <div class="card mb-4 border-success">
+                    <div class="card-body">
+                        <h3>Tu puntuación final</h3>
+                        <div class="display-1 text-success mb-3" id="puntuacion-final">0</div>
+                        <div id="mensaje-resultado" class="alert alert-success">¡Buen trabajo!</div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <a href="{% url 'alfabetizacion:jugar' juego.id %}" class="btn btn-primary btn-lg btn-block">Jugar de nuevo</a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'alfabetizacion:categoria_detail' juego.categoria.id %}" class="btn btn-secondary btn-lg btn-block">Más juegos</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        let preguntaActual = 1;
+        let totalPreguntas = {{ preguntas.count }};
+        let puntuacion = 0;
+        let respondidas = [];
+        
+        // Actualizar la barra de progreso
+        function actualizarProgreso() {
+            let porcentaje = ((preguntaActual - 1) / totalPreguntas) * 100;
+            $("#progress-bar").css("width", porcentaje + "%");
+            $("#pregunta-actual").text(preguntaActual);
+        }
+        
+        // Manejar clic en respuestas
+        $(".respuesta-btn").click(function() {
+            let boton = $(this);
+            let preguntaContainer = boton.closest(".pregunta-container");
+            let preguntaId = preguntaContainer.data("id");
+            
+            // Evitar responder dos veces
+            if (respondidas.includes(preguntaId)) {
+                return;
+            }
+            
+            respondidas.push(preguntaId);
+            
+            let esCorrecta = boton.data("correcta") === true;
+            
+            // Mostrar respuesta correcta/incorrecta
+            if (esCorrecta) {
+                boton.addClass("correcta");
+                puntuacion += 10;
+                $("#puntuacion").text(puntuacion);
+            } else {
+                boton.addClass("incorrecta");
+                // Mostrar cuál era la respuesta correcta
+                preguntaContainer.find(".respuesta-btn[data-correcta='true']").addClass("correcta");
+            }
+            
+            // Deshabilitar todas las respuestas para esta pregunta
+            preguntaContainer.find(".respuesta-btn").prop("disabled", true);
+            
+            // Pasar a la siguiente pregunta después de 1.5 segundos
+            setTimeout(function() {
+                preguntaActual++;
+                
+                if (preguntaActual <= totalPreguntas) {
+                    $(".pregunta-container").removeClass("active");
+                    $("#pregunta-" + preguntaActual).addClass("active");
+                    actualizarProgreso();
+                } else {
+                    // Mostrar resultados finales
+                    $(".pregunta-container").removeClass("active");
+                    $("#resultado-final").addClass("active");
+                    $("#puntuacion-final").text(puntuacion);
+                    
+                    // Personalizar mensaje según puntuación
+                    let mensaje = "";
+                    let porcentaje = (puntuacion / (totalPreguntas * 10)) * 100;
+                    
+                    if (porcentaje >= 80) {
+                        mensaje = "¡Excelente trabajo! ¡Eres un campeón!";
+                    } else if (porcentaje >= 60) {
+                        mensaje = "¡Buen trabajo! Sigue practicando.";
+                    } else {
+                        mensaje = "Sigue intentándolo, ¡tú puedes mejorar!";
+                    }
+                    
+                    $("#mensaje-resultado").text(mensaje);
+                    
+                    // Guardar progreso si el usuario está autenticado
+                    {% if user.is_authenticated %}
+                    $.post("{% url 'alfabetizacion:guardar_progreso' juego.id %}", {
+                        puntuacion: puntuacion,
+                        completado: true,
+                        csrfmiddlewaretoken: "{{ csrf_token }}"
+                    });
+                    {% endif %}
+                }
+            }, 1500);
+        });
+        
+        // Inicializar progreso
+        actualizarProgreso();
+    });
+</script>
+{% endblock %}

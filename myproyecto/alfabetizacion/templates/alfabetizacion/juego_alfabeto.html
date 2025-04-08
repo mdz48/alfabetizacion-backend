@@ -1,0 +1,491 @@
+{% extends 'alfabetizacion/base.html' %}
+{% load static %}
+
+{% block title %}Aprende el Alfabeto - Juegos de Alfabetización{% endblock %}
+
+{% block extra_css %}
+<style>
+    .letra-card {
+        height: 180px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-width: 3px;
+        overflow: hidden;
+    }
+    
+    .letra-card:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    
+    .letra-grande {
+        font-size: 72px;
+        font-weight: bold;
+        display: block;
+        margin-bottom: 10px;
+        font-family: 'Comic Neue', cursive;
+    }
+    
+    .letra-card.vocal {
+        border-color: #FF5722;
+    }
+    
+    .letra-card.consonante {
+        border-color: #2196F3;
+    }
+    
+    .example-word {
+        font-size: 24px;
+        margin-top: 10px;
+    }
+    
+    .modal-letra .modal-header {
+        text-align: center;
+        display: block;
+    }
+    
+    .modal-letra .letra-gigante {
+        font-size: 120px;
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+        margin: 20px 0;
+        font-family: 'Comic Neue', cursive;
+    }
+    
+    .example-image {
+        max-height: 200px;
+        margin: 0 auto;
+        display: block;
+    }
+    
+    .palabra-ejemplo {
+        text-align: center;
+        font-size: 28px;
+        margin: 20px 0;
+        font-weight: bold;
+    }
+    
+    .minuscula {
+        color: #666;
+        font-style: italic;
+    }
+    
+    .puntaje {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 15px;
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        z-index: 1000;
+    }
+    
+    .puntaje-valor {
+        font-size: 24px;
+        font-weight: bold;
+    }
+    
+    .puntaje-texto {
+        font-size: 12px;
+    }
+    
+    .btn-sound {
+        background-color: #FFC107;
+        color: #333;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        line-height: 50px;
+        text-align: center;
+        margin: 10px auto;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-sound:hover {
+        transform: scale(1.1);
+        background-color: #FF9800;
+    }
+    
+    .progreso-juego {
+        height: 10px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="puntaje">
+    <span class="puntaje-valor">0</span>
+    <span class="puntaje-texto">Puntos</span>
+</div>
+
+<div class="card border-primary mb-4">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">Aprende el Alfabeto</h3>
+        <div class="progress progreso-juego mt-2">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%" id="progreso-barra"></div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h4><i class="fas fa-info-circle"></i> ¿Cómo jugar?</h4>
+                    <p>Haz clic en las letras para aprender cómo suenan y palabras que comienzan con esa letra. ¡Completa actividades para ganar puntos!</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Vocales -->
+            <div class="col-12 mb-3">
+                <h4 class="text-center">Vocales</h4>
+            </div>
+            <div class="col-md-15 d-flex justify-content-around mb-4">
+                <div class="card letra-card vocal" data-toggle="modal" data-target="#letraModal" data-letra="A" data-tipo="vocal" data-palabra="Avión" data-imagen="avion.jpg" data-sonido="a.mp3">
+                    <span class="letra-grande">A</span>
+                    <small class="minuscula">a</small>
+                </div>
+                <div class="card letra-card vocal" data-toggle="modal" data-target="#letraModal" data-letra="E" data-tipo="vocal" data-palabra="Elefante" data-imagen="elefante.jpg" data-sonido="e.mp3">
+                    <span class="letra-grande">E</span>
+                    <small class="minuscula">e</small>
+                </div>
+                <div class="card letra-card vocal" data-toggle="modal" data-target="#letraModal" data-letra="I" data-tipo="vocal" data-palabra="Iglú" data-imagen="iglu.jpg" data-sonido="i.mp3">
+                    <span class="letra-grande">I</span>
+                    <small class="minuscula">i</small>
+                </div>
+                <div class="card letra-card vocal" data-toggle="modal" data-target="#letraModal" data-letra="O" data-tipo="vocal" data-palabra="Oso" data-imagen="oso.jpg" data-sonido="o.mp3">
+                    <span class="letra-grande">O</span>
+                    <small class="minuscula">o</small>
+                </div>
+                <div class="card letra-card vocal" data-toggle="modal" data-target="#letraModal" data-letra="U" data-tipo="vocal" data-palabra="Uva" data-imagen="uva.jpg" data-sonido="u.mp3">
+                    <span class="letra-grande">U</span>
+                    <small class="minuscula">u</small>
+                </div>
+            </div>
+            
+            <!-- Consonantes - Primera fila -->
+            <div class="col-12 mb-3">
+                <h4 class="text-center">Consonantes</h4>
+            </div>
+            <div class="col-md-2 mb-4">
+                <div class="card letra-card consonante" data-toggle="modal" data-target="#letraModal" data-letra="B" data-tipo="consonante" data-palabra="Barco" data-imagen="barco.jpg" data-sonido="b.mp3">
+                    <span class="letra-grande">B</span>
+                    <small class="minuscula">b</small>
+                </div>
+            </div>
+            <div class="col-md-2 mb-4">
+                <div class="card letra-card consonante" data-toggle="modal" data-target="#letraModal" data-letra="C" data-tipo="consonante" data-palabra="Casa" data-imagen="casa.jpg" data-sonido="c.mp3">
+                    <span class="letra-grande">C</span>
+                    <small class="minuscula">c</small>
+                </div>
+            </div>
+            <div class="col-md-2 mb-4">
+                <div class="card letra-card consonante" data-toggle="modal" data-target="#letraModal" data-letra="D" data-tipo="consonante" data-palabra="Dedo" data-imagen="dedo.jpg" data-sonido="d.mp3">
+                    <span class="letra-grande">D</span>
+                    <small class="minuscula">d</small>
+                </div>
+            </div>
+            <div class="col-md-2 mb-4">
+                <div class="card letra-card consonante" data-toggle="modal" data-target="#letraModal" data-letra="F" data-tipo="consonante" data-palabra="Flor" data-imagen="flor.jpg" data-sonido="f.mp3">
+                    <span class="letra-grande">F</span>
+                    <small class="minuscula">f</small>
+                </div>
+            </div>
+            <div class="col-md-2 mb-4">
+                <div class="card letra-card consonante" data-toggle="modal" data-target="#letraModal" data-letra="G" data-tipo="consonante" data-palabra="Gato" data-imagen="gato.jpg" data-sonido="g.mp3">
+                    <span class="letra-grande">G</span>
+                    <small class="minuscula">g</small>
+                </div>
+            </div>
+            <div class="col-md-2 mb-4">
+                <div class="card letra-card consonante" data-toggle="modal" data-target="#letraModal" data-letra="H" data-tipo="consonante" data-palabra="Helado" data-imagen="helado.jpg" data-sonido="h.mp3">
+                    <span class="letra-grande">H</span>
+                    <small class="minuscula">h</small>
+                </div>
+            </div>
+            
+            <!-- Más consonantes aquí... -->
+            <!-- Segunda fila -->
+            <div class="col-md-2 mb-4">
+                <div class="card letra-card consonante" data-toggle="modal" data-target="#letraModal" data-letra="J" data-tipo="consonante" data-palabra="Juego" data-imagen="juego.jpg" data-sonido="j.mp3">
+                    <span class="letra-grande">J</span>
+                    <small class="minuscula">j</small>
+                </div>
+            </div>
+            <div class="col-md-2 mb-4">
+                <div class="card letra-card consonante" data-toggle="modal" data-target="#letraModal" data-letra="K" data-tipo="consonante" data-palabra="Kilo" data-imagen="kilo.jpg" data-sonido="k.mp3">
+                    <span class="letra-grande">K</span>
+                    <small class="minuscula">k</small>
+                </div>
+            </div>
+            <div class="col-md-2 mb-4">
+                <div class="card letra-card consonante" data-toggle="modal" data-target="#letraModal" data-letra="L" data-tipo="consonante" data-palabra="Luna" data-imagen="luna.jpg" data-sonido="l.mp3">
+                    <span class="letra-grande">L</span>
+                    <small class="minuscula">l</small>
+                </div>
+            </div>
+            <div class="col-md-2 mb-4">
+                <div class="card letra-card consonante" data-toggle="modal" data-target="#letraModal" data-letra="M" data-tipo="consonante" data-palabra="Mano" data-imagen="mano.jpg" data-sonido="m.mp3">
+                    <span class="letra-grande">M</span>
+                    <small class="minuscula">m</small>
+                </div>
+            </div>
+            <div class="col-md-2 mb-4">
+                <div class="card letra-card consonante" data-toggle="modal" data-target="#letraModal" data-letra="N" data-tipo="consonante" data-palabra="Nube" data-imagen="nube.jpg" data-sonido="n.mp3">
+                    <span class="letra-grande">N</span>
+                    <small class="minuscula">n</small>
+                </div>
+            </div>
+            <div class="col-md-2 mb-4">
+                <div class="card letra-card consonante" data-toggle="modal" data-target="#letraModal" data-letra="Ñ" data-tipo="consonante" data-palabra="Ñandú" data-imagen="nandu.jpg" data-sonido="ñ.mp3">
+                    <span class="letra-grande">Ñ</span>
+                    <small class="minuscula">ñ</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para mostrar letra -->
+<div class="modal fade modal-letra" id="letraModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h4 class="modal-title w-100 text-center" id="letraModalLabel">Letra <span id="modal-letra-titulo"></span></h4>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="letra-gigante" id="modal-letra-grande"></div>
+                
+                <div class="btn-sound" onclick="reproducirSonido()">
+                    <i class="fas fa-volume-up fa-lg"></i>
+                </div>
+                
+                <hr>
+                
+                <div id="ejemplo-container">
+                    <img src="" id="ejemplo-imagen" class="example-image img-fluid rounded mb-3" alt="Imagen de ejemplo">
+                    <div class="palabra-ejemplo" id="ejemplo-palabra"></div>
+                </div>
+                
+                <hr>
+                
+                <div id="actividad-container" class="mt-4">
+                    <h5 class="text-primary mb-3"><i class="fas fa-pencil-alt"></i> Actividad</h5>
+                    <p>Elige la palabra que comienza con la letra <strong id="letra-actividad"></strong>:</p>
+                    <div class="row justify-content-center mt-3">
+                        <div class="col-md-4 mb-2">
+                            <button class="btn btn-outline-primary btn-block btn-opcion py-3" data-correcta="false">Opción 1</button>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <button class="btn btn-outline-primary btn-block btn-opcion py-3" data-correcta="true">Opción 2</button>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <button class="btn btn-outline-primary btn-block btn-opcion py-3" data-correcta="false">Opción 3</button>
+                        </div>
+                    </div>
+                    <div id="feedback-container" class="mt-3" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="btn-siguiente" style="display: none;">Siguiente Letra</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        let puntuacion = 0;
+        let letrasVistas = [];
+        let totalLetras = $('.letra-card').length;
+        
+        // Opciones por letra
+        const opcionesPorLetra = {
+            'A': ['Avión', 'Barco', 'Carro'],
+            'B': ['Barco', 'Pato', 'Mesa'],
+            'C': ['Casa', 'Perro', 'Taza'],
+            'D': ['Dedo', 'Gato', 'Sol'],
+            'E': ['Elefante', 'Zorro', 'Casa'],
+            'F': ['Flor', 'Tren', 'Rojo'],
+            'G': ['Gato', 'Pino', 'Cama'],
+            'H': ['Helado', 'Banco', 'Pala'],
+            'I': ['Iglú', 'Auto', 'Rosa'],
+            'J': ['Juego', 'Mano', 'Llave'],
+            'K': ['Kilo', 'Foco', 'Vaca'],
+            'L': ['Luna', 'Casa', 'Toro'],
+            'M': ['Mano', 'Sopa', 'Lana'],
+            'N': ['Nube', 'Taco', 'Dama'],
+            'Ñ': ['Ñandú', 'Toro', 'Peso'],
+            'O': ['Oso', 'Vaso', 'Fila'],
+            'U': ['Uva', 'Kilo', 'Taza']
+        };
+        
+        // Actualizar barra de progreso
+        function actualizarProgreso() {
+            let porcentaje = (letrasVistas.length / totalLetras) * 100;
+            $('#progreso-barra').css('width', porcentaje + '%');
+        }
+        
+        // Cuando se hace click en una letra
+        $('.letra-card').click(function() {
+            let letra = $(this).data('letra');
+            let tipo = $(this).data('tipo');
+            let palabra = $(this).data('palabra');
+            let imagen = $(this).data('imagen');
+            let sonido = $(this).data('sonido');
+            
+            // Actualizar el modal con la información de la letra
+            $('#modal-letra-titulo').text(letra);
+            $('#modal-letra-grande').text(letra);
+            $('#ejemplo-palabra').text(palabra);
+            $('#letra-actividad').text(letra);
+            
+            // Intentar cargar la imagen (con fallback si no existe)
+            let rutaImagen = '{% static "alfabetizacion/img/ejemplos/" %}' + letra.toLowerCase() + '.jpg';
+            $('#ejemplo-imagen').attr('src', rutaImagen);
+            $('#ejemplo-imagen').on('error', function() {
+                $(this).attr('src', 'https://via.placeholder.com/300x200?text=' + palabra);
+            });
+            
+            // Configurar las opciones para la actividad
+            let opciones = opcionesPorLetra[letra] || [palabra, 'Palabra 2', 'Palabra 3'];
+            opciones = shuffleArray(opciones);
+            
+            $('.btn-opcion').each(function(index) {
+                $(this).text(opciones[index]);
+                if (opciones[index] === palabra) {
+                    $(this).data('correcta', true);
+                } else {
+                    $(this).data('correcta', false);
+                }
+            });
+            
+            // Reiniciar el estado de la actividad
+            $('.btn-opcion').removeClass('btn-success btn-danger').addClass('btn-outline-primary').prop('disabled', false);
+            $('#feedback-container').hide().removeClass('alert-success alert-danger').empty();
+            $('#btn-siguiente').hide();
+            
+            // Marcar como vista si es la primera vez
+            if (!letrasVistas.includes(letra)) {
+                letrasVistas.push(letra);
+                actualizarProgreso();
+            }
+        });
+        
+        // Cuando se selecciona una opción en la actividad
+        $('.btn-opcion').click(function() {
+            let esCorrecta = $(this).data('correcta');
+            
+            // Deshabilitar todas las opciones
+            $('.btn-opcion').prop('disabled', true);
+            
+            if (esCorrecta) {
+                // Respuesta correcta
+                $(this).removeClass('btn-outline-primary').addClass('btn-success');
+                $('#feedback-container').html('<div class="alert alert-success"><i class="fas fa-check-circle"></i> ¡Correcto! +10 puntos</div>').show();
+                puntuacion += 10;
+                $('.puntaje-valor').text(puntuacion);
+            } else {
+                // Respuesta incorrecta
+                $(this).removeClass('btn-outline-primary').addClass('btn-danger');
+                $('.btn-opcion[data-correcta="true"]').removeClass('btn-outline-primary').addClass('btn-success');
+                $('#feedback-container').html('<div class="alert alert-danger"><i class="fas fa-times-circle"></i> Incorrecto. La respuesta correcta ha sido resaltada.</div>').show();
+            }
+            
+            // Mostrar botón para siguiente letra
+            $('#btn-siguiente').show();
+        });
+        
+        // Botón de siguiente letra
+        $('#btn-siguiente').click(function() {
+            $('#letraModal').modal('hide');
+            
+            // Encontrar la siguiente letra no vista
+            let todasLasLetras = $('.letra-card').map(function() {
+                return $(this).data('letra');
+            }).get();
+            
+            let letrasSinVer = todasLasLetras.filter(letra => !letrasVistas.includes(letra));
+            
+            if (letrasSinVer.length > 0) {
+                // Simular clic en la siguiente letra no vista después de un breve retraso
+                setTimeout(function() {
+                    $('.letra-card[data-letra="' + letrasSinVer[0] + '"]').click();
+                    $('#letraModal').modal('show');
+                }, 500);
+            } else if (letrasVistas.length === totalLetras) {
+                // Juego completado
+                setTimeout(function() {
+                    Swal.fire({
+                        title: '¡Felicidades!',
+                        text: 'Has completado todas las letras del alfabeto. Tu puntuación final es: ' + puntuacion,
+                        icon: 'success',
+                        confirmButtonText: 'Volver a jugar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload();
+                        }
+                    });
+                }, 500);
+            }
+        });
+        
+        // Función para reproducir sonido
+        window.reproducirSonido = function() {
+            let letra = $('#modal-letra-titulo').text();
+            let audio = new Audio('{% static "alfabetizacion/audio/" %}' + letra.toLowerCase() + '.mp3');
+            audio.onerror = function() {
+                // Usar la API de síntesis de voz si el archivo no está disponible
+                const utterance = new SpeechSynthesisUtterance(letra);
+                utterance.lang = 'es-ES';
+                speechSynthesis.speak(utterance);
+            };
+            audio.play();
+        };
+        
+        // Función para mezclar un array
+        function shuffleArray(array) {
+            let currentIndex = array.length, temporaryValue, randomIndex;
+            
+            // Mientras queden elementos a mezclar
+            while (0 !== currentIndex) {
+                // Seleccionar un elemento sin mezclar
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex -= 1;
+                
+                // Intercambiar con el elemento actual
+                temporaryValue = array[currentIndex];
+                array[currentIndex] = array[randomIndex];
+                array[randomIndex] = temporaryValue;
+            }
+            
+            return array;
+        }
+    });
+</script>
+{% endblock %}
