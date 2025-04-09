@@ -20,7 +20,7 @@
             {% if categoria.imagen %}
             <img src="{{ categoria.imagen.url }}" class="card-img-top" alt="{{ categoria.nombre }}">
             {% else %}
-            <img src="{% static 'alfabetizacion/img/default-category.png' %}" class="card-img-top" alt="{{ categoria.nombre }}" onerror="this.src='https://via.placeholder.com/350x150?text=Categoría'">
+            <img src="{% static 'alfabetizacion/img/default-category.png' %}" class="card-img-top" alt="{{ categoria.nombre }}" onerror="createPlaceholder(this, 'Categoría', '#007bff', '#ffffff')">
             {% endif %}
             <div class="card-body">
                 <h5 class="card-title">{{ categoria.nombre }}</h5>

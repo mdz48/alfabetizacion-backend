@@ -418,7 +418,7 @@
             let rutaImagen = '{% static "alfabetizacion/img/ejemplos/" %}' + letra.toLowerCase() + '.jpg';
             $('#ejemplo-imagen').attr('src', rutaImagen);
             $('#ejemplo-imagen').on('error', function() {
-                $(this).attr('src', 'https://via.placeholder.com/300x200?text=' + palabra);
+                createPlaceholder(this, palabra, '#007bff', '#ffffff');
             });
             
             // Configurar las opciones para la actividad

@@ -12,7 +12,7 @@
                     {% if categoria.imagen %}
                     <img src="{{ categoria.imagen.url }}" alt="{{ categoria.nombre }}" class="img-fluid rounded" style="max-width: 120px;">
                     {% else %}
-                    <img src="{% static 'alfabetizacion/img/default-category.png' %}" alt="{{ categoria.nombre }}" class="img-fluid rounded" style="max-width: 120px;" onerror="this.src='https://via.placeholder.com/120?text=Categoría'">
+                    <img src="{% static 'alfabetizacion/img/default-category.png' %}" alt="{{ categoria.nombre }}" class="img-fluid rounded" style="max-width: 120px;" onerror="createPlaceholder(this, 'Categoría', '#007bff', '#ffffff')">
                     {% endif %}
                 </div>
                 <div>
@@ -35,7 +35,7 @@
             {% if juego.imagen %}
             <img src="{{ juego.imagen.url }}" class="card-img-top" alt="{{ juego.titulo }}">
             {% else %}
-            <img src="{% static 'alfabetizacion/img/default-game.png' %}" class="card-img-top" alt="{{ juego.titulo }}" onerror="this.src='https://via.placeholder.com/350x150?text=Juego'">
+            <img src="{% static 'alfabetizacion/img/default-game.png' %}" class="card-img-top" alt="{{ juego.titulo }}" onerror="createPlaceholder(this, 'Juego', '#28a745', '#ffffff')">
             {% endif %}
             <div class="card-body">
                 <h5 class="card-title">{{ juego.titulo }}</h5>
