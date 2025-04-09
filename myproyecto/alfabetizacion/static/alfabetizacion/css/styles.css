@@ -88,3 +88,32 @@ body {
 footer {
     border-top: 5px solid #FFC107;
 }
+
+/* Estilos para el contenedor de imagen de ejemplo */
+.example-image-container {
+    position: relative;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #007bff;
+}
+
+.example-image {
+    max-height: 200px;
+    margin: 0 auto;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.example-image.loaded {
+    opacity: 1;
+}

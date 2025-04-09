@@ -236,26 +236,38 @@
             <div class="col-12 mb-3">
                 <h4 class="text-center">Vocales</h4>
             </div>
-            <div class="col-md-15 d-flex justify-content-around mb-4">
-                <div class="card letra-card vocal" data-toggle="modal" data-target="#letraModal" data-letra="A" data-tipo="vocal" data-palabra="Avión" data-imagen="avion.jpg" data-sonido="a.mp3">
-                    <span class="letra-grande">A</span>
-                    <small class="minuscula">a</small>
-                </div>
-                <div class="card letra-card vocal" data-toggle="modal" data-target="#letraModal" data-letra="E" data-tipo="vocal" data-palabra="Elefante" data-imagen="elefante.jpg" data-sonido="e.mp3">
-                    <span class="letra-grande">E</span>
-                    <small class="minuscula">e</small>
-                </div>
-                <div class="card letra-card vocal" data-toggle="modal" data-target="#letraModal" data-letra="I" data-tipo="vocal" data-palabra="Iglú" data-imagen="iglu.jpg" data-sonido="i.mp3">
-                    <span class="letra-grande">I</span>
-                    <small class="minuscula">i</small>
-                </div>
-                <div class="card letra-card vocal" data-toggle="modal" data-target="#letraModal" data-letra="O" data-tipo="vocal" data-palabra="Oso" data-imagen="oso.jpg" data-sonido="o.mp3">
-                    <span class="letra-grande">O</span>
-                    <small class="minuscula">o</small>
-                </div>
-                <div class="card letra-card vocal" data-toggle="modal" data-target="#letraModal" data-letra="U" data-tipo="vocal" data-palabra="Uva" data-imagen="uva.jpg" data-sonido="u.mp3">
-                    <span class="letra-grande">U</span>
-                    <small class="minuscula">u</small>
+            <div class="col-12 mb-4">
+                <div class="row justify-content-center">
+                    <div class="col-md-2 col-sm-4 col-6 mb-3 text-center">
+                        <div class="card letra-card vocal" data-toggle="modal" data-target="#letraModal" data-letra="A" data-tipo="vocal" data-palabra="Avión" data-imagen="avion.jpg" data-sonido="a.mp3">
+                            <span class="letra-grande">A</span>
+                            <small class="minuscula">a</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6 mb-3 text-center">
+                        <div class="card letra-card vocal" data-toggle="modal" data-target="#letraModal" data-letra="E" data-tipo="vocal" data-palabra="Elefante" data-imagen="elefante.jpg" data-sonido="e.mp3">
+                            <span class="letra-grande">E</span>
+                            <small class="minuscula">e</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6 mb-3 text-center">
+                        <div class="card letra-card vocal" data-toggle="modal" data-target="#letraModal" data-letra="I" data-tipo="vocal" data-palabra="Iglú" data-imagen="iglu.jpg" data-sonido="i.mp3">
+                            <span class="letra-grande">I</span>
+                            <small class="minuscula">i</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6 mb-3 text-center">
+                        <div class="card letra-card vocal" data-toggle="modal" data-target="#letraModal" data-letra="O" data-tipo="vocal" data-palabra="Oso" data-imagen="oso.jpg" data-sonido="o.mp3">
+                            <span class="letra-grande">O</span>
+                            <small class="minuscula">o</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6 mb-3 text-center">
+                        <div class="card letra-card vocal" data-toggle="modal" data-target="#letraModal" data-letra="U" data-tipo="vocal" data-palabra="Uva" data-imagen="uva.jpg" data-sonido="u.mp3">
+                            <span class="letra-grande">U</span>
+                            <small class="minuscula">u</small>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -363,8 +375,13 @@
                 <hr>
                 
                 <div id="ejemplo-container">
-                    <img src="" id="ejemplo-imagen" class="example-image img-fluid rounded mb-3" alt="Imagen de ejemplo">
-                    <div class="palabra-ejemplo" id="ejemplo-palabra"></div>
+                    <div class="example-image-container">
+                        <img src="" id="ejemplo-imagen" class="example-image img-fluid rounded mb-3" alt="Imagen de ejemplo" 
+                             style="max-height: 200px; object-fit: contain;">
+                        <div class="loading-spinner" style="display: none;">
+                            <i class="fas fa-spinner fa-spin fa-3x"></i>
+                        </div>
+                    </div>
                 </div>
                 
                 <hr>
@@ -404,6 +421,12 @@
 {% block extra_js %}
 <script>
     $(document).ready(function() {
+        // Initialize image cache
+        const imageCache = new Map();
+        
+        // Seguimiento de palabras usadas por letra
+        const palabrasUsadas = {};
+        
         let puntuacion = 0;
         let letrasVistas = [];
         let totalLetras = $('.letra-card').length;
@@ -425,7 +448,7 @@
             },
             medio: {
                 puntosPorRespuesta: 15,
-                tiempoRespuesta: 10, // 10 segundos para responder
+                tiempoRespuesta: 15, // Aumentado de 10 a 15 segundos
                 seleccionesRequeridas: 1,
                 mostrarPistas: false,
                 mostrarPalabra: true,
@@ -433,7 +456,7 @@
             },
             dificil: {
                 puntosPorRespuesta: 25,
-                tiempoRespuesta: 7, // 7 segundos para responder
+                tiempoRespuesta: 12, // Aumentado de 7 a 12 segundos
                 seleccionesRequeridas: 2,
                 mostrarPistas: false,
                 mostrarPalabra: false,
@@ -506,27 +529,64 @@
         
         // Generar opciones para la actividad
         function generarOpciones(letra) {
+            // Inicializar seguimiento de palabras usadas para esta letra si no existe
+            if (!palabrasUsadas[letra]) {
+                palabrasUsadas[letra] = {
+                    correctas: [],
+                    incorrectas: []
+                };
+            }
+            
             // Obtener todas las opciones disponibles para la letra
             let todasOpciones = opcionesPorLetra[letra] || [`${letra}palabra`, 'Palabra 2', 'Palabra 3', 'Palabra 4', 'Palabra 5'];
             
-            // Obtener palabras que empiezan con la letra
-            let opcionesCorrectas = todasOpciones.filter(palabra => 
+            // Obtener palabras que empiezan con la letra (correctas)
+            let todasOpcionesCorrectas = todasOpciones.filter(palabra => 
                 palabra.toLowerCase().startsWith(letra.toLowerCase())
             );
             
+            // Filtrar las palabras correctas que ya se han usado
+            let opcionesCorrectas = todasOpcionesCorrectas.filter(palabra => 
+                !palabrasUsadas[letra].correctas.includes(palabra)
+            );
+            
+            // Si no quedan opciones correctas sin usar, reiniciar el seguimiento
+            if (opcionesCorrectas.length < configActual.seleccionesRequeridas) {
+                palabrasUsadas[letra].correctas = [];
+                opcionesCorrectas = todasOpcionesCorrectas;
+            }
+            
             // Obtener palabras incorrectas (que no empiezan con la letra)
-            let opcionesIncorrectas = todasOpciones.filter(palabra => 
+            let todasOpcionesIncorrectas = todasOpciones.filter(palabra => 
                 !palabra.toLowerCase().startsWith(letra.toLowerCase())
             );
             
+            // Filtrar las palabras incorrectas que ya se han usado
+            let opcionesIncorrectas = todasOpcionesIncorrectas.filter(palabra => 
+                !palabrasUsadas[letra].incorrectas.includes(palabra)
+            );
+            
+            // Si no quedan opciones incorrectas sin usar, reiniciar el seguimiento
+            if (opcionesIncorrectas.length < (configActual.opciones - configActual.seleccionesRequeridas)) {
+                palabrasUsadas[letra].incorrectas = [];
+                opcionesIncorrectas = todasOpcionesIncorrectas;
+            }
+            
             // Si no hay suficientes opciones correctas, generar algunas
             while (opcionesCorrectas.length < configActual.seleccionesRequeridas) {
-                opcionesCorrectas.push(`${letra}${Math.random().toString(36).substring(2, 7)}`);
+                const nuevaPalabra = `${letra}${Math.random().toString(36).substring(2, 7)}`;
+                if (!palabrasUsadas[letra].correctas.includes(nuevaPalabra)) {
+                    opcionesCorrectas.push(nuevaPalabra);
+                }
             }
             
             // Tomar las opciones requeridas según el nivel
             let correctas = opcionesCorrectas.slice(0, configActual.seleccionesRequeridas);
             let incorrectas = opcionesIncorrectas.slice(0, configActual.opciones - configActual.seleccionesRequeridas);
+            
+            // Registrar estas palabras como usadas
+            palabrasUsadas[letra].correctas = [...palabrasUsadas[letra].correctas, ...correctas];
+            palabrasUsadas[letra].incorrectas = [...palabrasUsadas[letra].incorrectas, ...incorrectas];
             
             // Combinar y mezclar las opciones
             let opciones = [...correctas, ...incorrectas];
@@ -625,10 +685,114 @@
         }
         
         // Cuando se hace click en una letra
-        $('.letra-card').click(function() {
+        $('.letra-card').click(async function() {
             let letra = $(this).data('letra');
             let tipo = $(this).data('tipo');
-            let palabra = $(this).data('palabra');
+            
+            // Palabras específicas para cada nivel y letra
+            const palabrasPorNivel = {
+                facil: {
+                    'A': ['Avión', 'Auto', 'Amor'],
+                    'B': ['Barco', 'Botón', 'Bicicleta'],
+                    'C': ['Casa', 'Caballo', 'Conejo'],
+                    'D': ['Dedo', 'Dinosaurio', 'Dulce'],
+                    'E': ['Elefante', 'Espejo', 'Escoba'],
+                    'F': ['Flor', 'Fuego', 'Foca'],
+                    'G': ['Gato', 'Gafas', 'Gusano'],
+                    'H': ['Helado', 'Hormiga', 'Hamaca'],
+                    'I': ['Iglú', 'Imán', 'Invierno'],
+                    'J': ['Juego', 'Jirafa', 'Jabón'],
+                    'K': ['Kilo', 'Kiosco', 'Karate'],
+                    'L': ['Luna', 'León', 'Limón'],
+                    'M': ['Mano', 'Mariposa', 'Manzana'],
+                    'N': ['Nube', 'Nido', 'Noche'],
+                    'Ñ': ['Ñandú', 'Ñoño', 'Ñame'],
+                    'O': ['Oso', 'Oreja', 'Océano'],
+                    'P': ['Perro', 'Plátano', 'Piano'],
+                    'Q': ['Queso', 'Quirófano', 'Quemadura'],
+                    'R': ['Ratón', 'Rueda', 'Ropa'],
+                    'S': ['Sol', 'Serpiente', 'Sandía'],
+                    'T': ['Tren', 'Tomate', 'Teléfono'],
+                    'U': ['Uva', 'Universo', 'Uniforme'],
+                    'V': ['Vaca', 'Ventana', 'Vestido'],
+                    'W': ['Waterpolo', 'Whisky', 'Washington'],
+                    'X': ['Xilófono', 'Xerocopia', 'Xenofobia'],
+                    'Y': ['Yo-yo', 'Yogur', 'Yunque'],
+                    'Z': ['Zapato', 'Zoológico', 'Zanahoria']
+                },
+                medio: {
+                    'A': ['Árbol', 'Azul', 'Anillo'],
+                    'B': ['Bote', 'Bola', 'Ballena'],
+                    'C': ['Coche', 'Camión', 'Cocodrilo'],
+                    'D': ['Dado', 'Delfín', 'Diamante'],
+                    'E': ['Escalera', 'Estrella', 'Escarabajo'],
+                    'F': ['Fresa', 'Familia', 'Fantasma'],
+                    'G': ['Gallina', 'Gorra', 'Guitarra'],
+                    'H': ['Hoja', 'Huevo', 'Hombro'],
+                    'I': ['Isla', 'Indio', 'Iglesia'],
+                    'J': ['Jardín', 'Jaula', 'Jamón'],
+                    'K': ['Koala', 'Kiwi', 'Kayak'],
+                    'L': ['Libro', 'Lápiz', 'Lobo'],
+                    'M': ['Mesa', 'Mono', 'Montaña'],
+                    'N': ['Nariz', 'Naranja', 'Nieve'],
+                    'Ñ': ['Ñu', 'Ñoqui', 'Ñora'],
+                    'O': ['Ojo', 'Oveja', 'Oruga'],
+                    'P': ['Pato', 'Pelota', 'Payaso'],
+                    'Q': ['Química', 'Quince', 'Queso fresco'],
+                    'R': ['Rosa', 'Reloj', 'Rana'],
+                    'S': ['Silla', 'Sapo', 'Sombrero'],
+                    'T': ['Tigre', 'Taza', 'Tambor'],
+                    'U': ['Unicornio', 'Uno', 'Uña'],
+                    'V': ['Vaso', 'Vela', 'Volcán'],
+                    'W': ['Wifi', 'Web', 'Wok'],
+                    'X': ['Xenón', 'Xilografía', 'Xilofón'],
+                    'Y': ['Yate', 'Yegua', 'Yema'],
+                    'Z': ['Zorro', 'Zebra', 'Zapatilla']
+                },
+                dificil: {
+                    'A': ['Ancla', 'Abeja', 'Agua'],
+                    'B': ['Bebé', 'Banana', 'Bolso'],
+                    'C': ['Cebra', 'Cuadro', 'Castillo'],
+                    'D': ['Dragón', 'Dibujo', 'Dormir'],
+                    'E': ['Erizo', 'Estatua', 'Estuche'],
+                    'F': ['Foto', 'Farola', 'Futbol'],
+                    'G': ['Gigante', 'Goma', 'Globo'],
+                    'H': ['Hospital', 'Hilo', 'Hierba'],
+                    'I': ['Insecto', 'Inyección', 'Impresora'],
+                    'J': ['Jinete', 'Juguete', 'Jungla'],
+                    'K': ['Kimono', 'Kebab', 'Kung-fu'],
+                    'L': ['Lago', 'Ladrillo', 'Lluvia'],
+                    'M': ['Mar', 'Melón', 'Mosca'],
+                    'N': ['Navidad', 'Nido', 'Nuez'],
+                    'Ñ': ['Ñoquis', 'Ñizca', 'Ñacundá'],
+                    'O': ['Ordenador', 'Olla', 'Orquesta'],
+                    'P': ['Palmera', 'Puente', 'Pintura'],
+                    'Q': ['Quiosco', 'Quimera', 'Quesadilla'],
+                    'R': ['Río', 'Raqueta', 'Robot'],
+                    'S': ['Sopa', 'Sal', 'Sofá'],
+                    'T': ['Túnel', 'Teatro', 'Tortuga'],
+                    'U': ['Ukelele', 'Urraca', 'Uruguay'],
+                    'V': ['Violín', 'Viento', 'Volante'],
+                    'W': ['Waffle', 'Wrestling', 'Wombat'],
+                    'X': ['Xilofonista', 'X-men', 'Xerox'],
+                    'Y': ['Yelmo', 'Yucatán', 'Yoga'],
+                    'Z': ['Zanja', 'Zumo', 'Zombie']
+                }
+            };
+            
+            // Seleccionar una palabra específica para el nivel actual
+            let palabrasPorLetra = palabrasPorNivel[nivel] && palabrasPorNivel[nivel][letra] 
+                ? palabrasPorNivel[nivel][letra] 
+                : opcionesPorLetra[letra].filter(p => p.toLowerCase().startsWith(letra.toLowerCase()));
+                
+            // Elegir una palabra al azar para este nivel
+            let palabra = palabrasPorLetra[Math.floor(Math.random() * palabrasPorLetra.length)];
+            
+            // Si no hay palabras disponibles para este nivel/letra, usar la palabra predeterminada
+            if (!palabra) {
+                palabra = $(this).data('palabra');
+            }
+            
             let imagen = $(this).data('imagen');
             let sonido = $(this).data('sonido');
             
@@ -638,12 +802,21 @@
             $('#ejemplo-palabra').text(palabra);
             $('#letra-actividad').text(letra);
             
-            // Intentar cargar la imagen (con fallback si no existe)
-            let rutaImagen = '{% static "alfabetizacion/img/ejemplos/" %}' + letra.toLowerCase() + '.jpg';
-            $('#ejemplo-imagen').attr('src', rutaImagen);
-            $('#ejemplo-imagen').on('error', function() {
-                createPlaceholder(this, palabra, '#007bff', '#ffffff');
-            });
+            // Intentar obtener una imagen para la palabra
+            try {
+                const imageUrl = await getImageForWord(palabra);
+                if (imageUrl) {
+                    $('#ejemplo-imagen').attr('src', imageUrl)
+                                      .on('error', function() {
+                                          createPlaceholder(this, palabra, '#007bff', '#ffffff');
+                                      });
+                } else {
+                    createPlaceholder($('#ejemplo-imagen')[0], palabra, '#007bff', '#ffffff');
+                }
+            } catch (error) {
+                console.error('Error loading image:', error);
+                createPlaceholder($('#ejemplo-imagen')[0], palabra, '#007bff', '#ffffff');
+            }
             
             // Configurar las opciones para la actividad
             generarOpcionesHTML(letra);
@@ -820,19 +993,46 @@
             detenerTemporizador();
         });
         
-        // Función para reproducir sonido
+        // Cuando cierra el modal y vuelve a abrir la misma letra
+        $('#letraModal').on('show.bs.modal', function(e) {
+            let letra = $('#modal-letra-titulo').text();
+            
+            // Actualizar el texto de la descripción del nivel según los nuevos tiempos
+            if (letra) {
+                if (nivel === 'medio') {
+                    $('.alert-info p:contains("10 segundos")').html(`<strong>Nivel Medio:</strong> ¡Tienes <span class="text-danger">15 segundos</span> para seleccionar la palabra correcta!`);
+                } else if (nivel === 'dificil') {
+                    $('.alert-info p:contains("7 segundos")').html(`<strong>Nivel Difícil:</strong> ¡Tienes <span class="text-danger">12 segundos</span> para seleccionar <span class="text-danger">2 palabras</span> que comiencen con la letra indicada!`);
+                }
+                
+                // Regenerar opciones
+                generarOpcionesHTML(letra);
+            }
+        });
+        
+        // Función para reproducir sonido con mejor manejo de errores
         window.reproducirSonido = function() {
             let letra = $('#modal-letra-titulo').text();
-            let audio = new Audio('{% static "alfabetizacion/audio/" %}' + letra.toLowerCase() + '.mp3');
+            let audioPath = '{% static "alfabetizacion/audio/" %}' + letra.toLowerCase() + '.mp3';
+            
+            // Primero intentar con la API de síntesis de voz
+            const utterance = new SpeechSynthesisUtterance(letra);
+            utterance.lang = 'es-ES';
+            
+            // Luego intentar cargar el archivo de audio
+            let audio = new Audio(audioPath);
             audio.onerror = function() {
-                // Usar la API de síntesis de voz si el archivo no está disponible
-                const utterance = new SpeechSynthesisUtterance(letra);
-                utterance.lang = 'es-ES';
+                console.log('Usando síntesis de voz para:', letra);
                 speechSynthesis.speak(utterance);
             };
-            audio.play();
+            
+            // Intentar reproducir el audio
+            audio.play().catch(function(error) {
+                console.log('Error reproduciendo audio, usando síntesis:', error);
+                speechSynthesis.speak(utterance);
+            });
         };
-        
+
         // Función para mezclar un array
         function shuffleArray(array) {
             let currentIndex = array.length, temporaryValue, randomIndex;
@@ -850,6 +1050,85 @@
             }
             
             return array;
+        }
+        
+        // Función para obtener imagen de Pixabay
+        async function getImageForWord(word) {
+            try {
+                // Cache check
+                if (imageCache.has(word)) {
+                    return imageCache.get(word);
+                }
+
+                const PIXABAY_API_KEY = '49686734-3164ad3109439a0cc1bbedf79';
+                const baseUrl = 'https://pixabay.com/api/';
+                
+                // Remove special characters and normalize search terms
+                const normalizeText = (text) => {
+                    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                              .toLowerCase()
+                              .trim();
+                };
+
+                const searchTerms = [
+                    word,
+                    normalizeText(word),
+                    word.split(' ')[0]  // First word only
+                ];
+
+                $('.loading-spinner').show();
+
+                for (const term of searchTerms) {
+                    try {
+                        const params = {
+                            key: PIXABAY_API_KEY,
+                            q: term,
+                            image_type: 'photo',
+                            safesearch: true,
+                            lang: 'es',
+                            per_page: 3
+                        };
+
+                        // Build URL with proper encoding
+                        const queryString = Object.keys(params)
+                            .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+                            .join('&');
+
+                        const url = `${baseUrl}?${queryString}`;
+                        
+                        const response = await fetch(url);
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data.hits && data.hits.length > 0) {
+                            const randomIndex = Math.floor(Math.random() * data.hits.length);
+                            const imageUrl = data.hits[randomIndex].webformatURL;
+                            
+                            // Cache the result
+                            imageCache.set(word, imageUrl);
+                            return imageUrl;
+                        }
+                    } catch (error) {
+                        console.error('Error buscando término:', term, error);
+                        continue;
+                    }
+                }
+                
+                // If no image found, return a placeholder
+                const placeholderUrl = `https://via.placeholder.com/400x300/007bff/ffffff?text=${encodeURIComponent(word)}`;
+                imageCache.set(word, placeholderUrl);
+                return placeholderUrl;
+                
+            } catch (error) {
+                console.error('Error general en getImageForWord:', error);
+                return `https://via.placeholder.com/400x300/007bff/ffffff?text=${encodeURIComponent(word)}`;
+            } finally {
+                $('.loading-spinner').hide();
+            }
         }
     });
 </script>
