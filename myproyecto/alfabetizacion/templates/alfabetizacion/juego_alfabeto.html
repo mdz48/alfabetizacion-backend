@@ -153,6 +153,50 @@
         background-color: #dc3545;
         color: white;
     }
+    
+    /* Timer styles */
+    .timer-container {
+        margin-top: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .timer {
+        font-size: 24px;
+        font-weight: bold;
+        color: #dc3545;
+        background-color: #f8d7da;
+        padding: 5px 15px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+    
+    /* Selection count indicator */
+    .selection-count {
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 10px;
+        text-align: center;
+    }
+    
+    /* Selected option style */
+    .btn-opcion.selected {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+    
+    /* Level indicator badge with better visibility */
+    .level-indicator {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 16px;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        z-index: 100;
+    }
 </style>
 {% endblock %}
 
@@ -175,7 +219,14 @@
             <div class="col-12">
                 <div class="alert alert-info">
                     <h4><i class="fas fa-info-circle"></i> ¿Cómo jugar?</h4>
-                    <p>Haz clic en las letras para aprender cómo suenan y palabras que comienzan con esa letra. ¡Completa actividades para ganar puntos!</p>
+                    <p>Haz clic en las letras para aprender cómo suenan y palabras que comienzan con esa letra.</p>
+                    {% if nivel == 'facil' %}
+                        <p><strong>Nivel Fácil:</strong> Selecciona la palabra que comienza con la letra indicada.</p>
+                    {% elif nivel == 'medio' %}
+                        <p><strong>Nivel Medio:</strong> ¡Tienes <span class="text-danger">10 segundos</span> para seleccionar la palabra correcta!</p>
+                    {% elif nivel == 'dificil' %}
+                        <p><strong>Nivel Difícil:</strong> ¡Tienes <span class="text-danger">7 segundos</span> para seleccionar <span class="text-danger">2 palabras</span> que comiencen con la letra indicada!</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -297,6 +348,7 @@
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h4 class="modal-title w-100 text-center" id="letraModalLabel">Letra <span id="modal-letra-titulo"></span></h4>
+                <span class="level-indicator badge" id="level-badge">Nivel</span>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -319,24 +371,30 @@
                 
                 <div id="actividad-container" class="mt-4">
                     <h5 class="text-primary mb-3"><i class="fas fa-pencil-alt"></i> Actividad</h5>
-                    <p>Elige la palabra que comienza con la letra <strong id="letra-actividad"></strong>:</p>
-                    <div class="row justify-content-center mt-3">
-                        <div class="col-md-4 mb-2">
-                            <button class="btn btn-outline-primary btn-block btn-opcion py-3" data-correcta="false">Opción 1</button>
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <button class="btn btn-outline-primary btn-block btn-opcion py-3" data-correcta="true">Opción 2</button>
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <button class="btn btn-outline-primary btn-block btn-opcion py-3" data-correcta="false">Opción 3</button>
-                        </div>
+                    
+                    <!-- Timer container for medium and difficult levels -->
+                    <div id="timer-container" class="timer-container" style="display: none;">
+                        <div class="timer" id="countdown-timer">10</div>
                     </div>
+                    
+                    <p>Elige <span id="selection-required">la palabra</span> que comienza con la letra <strong id="letra-actividad"></strong>:</p>
+                    
+                    <!-- Selection count indicator for difficult level -->
+                    <div id="selection-counter" class="selection-count" style="display: none;">
+                        Seleccionadas: <span id="selected-count">0</span>/<span id="required-count">2</span>
+                    </div>
+                    
+                    <div class="row justify-content-center mt-3" id="options-container">
+                        <!-- Options will be dynamically generated -->
+                    </div>
+                    
                     <div id="feedback-container" class="mt-3" style="display: none;"></div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn btn-primary" id="btn-siguiente" style="display: none;">Siguiente Letra</button>
+                <button type="button" class="btn btn-success" id="btn-check-answers" style="display: none;">Verificar Respuestas</button>
             </div>
         </div>
     </div>
@@ -350,54 +408,220 @@
         let letrasVistas = [];
         let totalLetras = $('.letra-card').length;
         let nivel = "{{ nivel }}";
-        
-        // Opciones por letra
-        const opcionesPorLetra = {
-            'A': ['Avión', 'Barco', 'Carro'],
-            'B': ['Barco', 'Pato', 'Mesa'],
-            'C': ['Casa', 'Perro', 'Taza'],
-            'D': ['Dedo', 'Gato', 'Sol'],
-            'E': ['Elefante', 'Zorro', 'Casa'],
-            'F': ['Flor', 'Tren', 'Rojo'],
-            'G': ['Gato', 'Pino', 'Cama'],
-            'H': ['Helado', 'Banco', 'Pala'],
-            'I': ['Iglú', 'Auto', 'Rosa'],
-            'J': ['Juego', 'Mano', 'Llave'],
-            'K': ['Kilo', 'Foco', 'Vaca'],
-            'L': ['Luna', 'Casa', 'Toro'],
-            'M': ['Mano', 'Sopa', 'Lana'],
-            'N': ['Nube', 'Taco', 'Dama'],
-            'Ñ': ['Ñandú', 'Toro', 'Peso'],
-            'O': ['Oso', 'Vaso', 'Fila'],
-            'U': ['Uva', 'Kilo', 'Taza']
-        };
+        let countdownTimer = null;
+        let timeLeft = 0;
+        let selectedOptions = [];
+        let requiredSelections = nivel === 'dificil' ? 2 : 1;
         
         // Configuración basada en niveles de dificultad
         const configuracionNivel = {
             facil: {
                 puntosPorRespuesta: 10,
-                tiempoRespuesta: 10000, // 10 segundos para responder
-                pistas: true
+                tiempoRespuesta: 0, // Sin temporizador
+                seleccionesRequeridas: 1,
+                mostrarPistas: true,
+                mostrarPalabra: true,
+                opciones: 3
             },
             medio: {
                 puntosPorRespuesta: 15,
-                tiempoRespuesta: 7000, // 7 segundos para responder
-                pistas: false
+                tiempoRespuesta: 10, // 10 segundos para responder
+                seleccionesRequeridas: 1,
+                mostrarPistas: false,
+                mostrarPalabra: true,
+                opciones: 3
             },
             dificil: {
-                puntosPorRespuesta: 20,
-                tiempoRespuesta: 5000, // 5 segundos para responder
-                pistas: false
+                puntosPorRespuesta: 25,
+                tiempoRespuesta: 7, // 7 segundos para responder
+                seleccionesRequeridas: 2,
+                mostrarPistas: false,
+                mostrarPalabra: false,
+                opciones: 5 // Más opciones en nivel difícil
             }
         };
         
         // Obtener configuración actual
         const configActual = configuracionNivel[nivel] || configuracionNivel.facil;
         
+        // Colorear el badge de nivel según dificultad
+        function setLevelBadge() {
+            const badge = $('#level-badge');
+            badge.text('Nivel ' + {
+                'facil': 'Fácil',
+                'medio': 'Medio',
+                'dificil': 'Difícil'
+            }[nivel]);
+            
+            badge.removeClass('badge-success badge-warning badge-danger');
+            
+            if (nivel === 'facil') {
+                badge.addClass('badge-success');
+            } else if (nivel === 'medio') {
+                badge.addClass('badge-warning');
+            } else if (nivel === 'dificil') {
+                badge.addClass('badge-danger');
+            }
+        }
+        
+        // Inicializar badge de nivel
+        setLevelBadge();
+        
+        // Opciones por letra con más palabras para el nivel difícil
+        const opcionesPorLetra = {
+            'A': ['Avión', 'Árbol', 'Amor', 'Barco', 'Carro', 'Perro', 'Taza', 'Auto', 'Azul'],
+            'B': ['Barco', 'Bote', 'Bola', 'Pato', 'Mesa', 'Toro', 'Niño', 'Bicicleta', 'Botón'],
+            'C': ['Casa', 'Coche', 'Camión', 'Perro', 'Taza', 'Libro', 'Dedo', 'Caballo', 'Conejo'],
+            'D': ['Dedo', 'Dado', 'Delfín', 'Gato', 'Sol', 'Luna', 'Papel', 'Dinosaurio', 'Dulce'],
+            'E': ['Elefante', 'Escalera', 'Estrella', 'Zorro', 'Casa', 'Árbol', 'Tren', 'Espejo', 'Escoba'],
+            'F': ['Flor', 'Fresa', 'Familia', 'Tren', 'Rojo', 'Bola', 'Gato', 'Fuego', 'Foca'],
+            'G': ['Gato', 'Gallina', 'Gorra', 'Pino', 'Cama', 'Libro', 'Tren', 'Gafas', 'Gusano'],
+            'H': ['Helado', 'Hoja', 'Huevo', 'Banco', 'Pala', 'Barco', 'Mesa', 'Hormiga', 'Hamaca'],
+            'I': ['Iglú', 'Isla', 'Indio', 'Auto', 'Rosa', 'Dedo', 'Libro', 'Imán', 'Invierno'],
+            'J': ['Juego', 'Jardín', 'Jaula', 'Mano', 'Llave', 'Casa', 'Tren', 'Jirafa', 'Jabón'],
+            'K': ['Kilo', 'Koala', 'Kiwi', 'Foco', 'Vaca', 'Toro', 'Pino', 'Kiosco', 'Karate'],
+            'L': ['Luna', 'Libro', 'Lápiz', 'Casa', 'Toro', 'Mano', 'Pato', 'León', 'Limón'],
+            'M': ['Mano', 'Mesa', 'Mono', 'Sopa', 'Lana', 'Perro', 'Casa', 'Mariposa', 'Manzana'],
+            'N': ['Nube', 'Nariz', 'Naranja', 'Taco', 'Dama', 'Pino', 'Mesa', 'Nido', 'Noche'],
+            'Ñ': ['Ñandú', 'Ñoño', 'Ñame', 'Toro', 'Peso', 'Mano', 'Casa', 'Niño', 'Niña'],
+            'O': ['Oso', 'Ojo', 'Oveja', 'Vaso', 'Fila', 'Mesa', 'Casa', 'Oreja', 'Océano'],
+            'P': ['Perro', 'Pato', 'Pelota', 'Mesa', 'Casa', 'Libro', 'Barco', 'Plátano', 'Piano'],
+            'Q': ['Queso', 'Química', 'Quince', 'Perro', 'Mesa', 'Barco', 'Tren', 'Quirófano', 'Quemadura'],
+            'R': ['Ratón', 'Rosa', 'Reloj', 'Pato', 'Mesa', 'Libro', 'Casa', 'Rueda', 'Ropa'],
+            'S': ['Sol', 'Silla', 'Sapo', 'Perro', 'Mesa', 'Casa', 'Libro', 'Serpiente', 'Sandía'],
+            'T': ['Tren', 'Tigre', 'Taza', 'Perro', 'Mesa', 'Casa', 'Barco', 'Tomate', 'Teléfono'],
+            'U': ['Uva', 'Unicornio', 'Uno', 'Kilo', 'Taza', 'Barco', 'Perro', 'Universo', 'Uniforme'],
+            'V': ['Vaca', 'Vaso', 'Vela', 'Perro', 'Mesa', 'Casa', 'Tren', 'Ventana', 'Vestido'],
+            'W': ['Waterpolo', 'Wifi', 'Web', 'Perro', 'Mesa', 'Casa', 'Barco', 'Whisky', 'Washington'],
+            'X': ['Xilófono', 'Xenón', 'Xilografía', 'Perro', 'Mesa', 'Casa', 'Tren', 'Xerocopia', 'Xenofobia'],
+            'Y': ['Yo-yo', 'Yate', 'Yegua', 'Perro', 'Mesa', 'Casa', 'Barco', 'Yogur', 'Yunque'],
+            'Z': ['Zapato', 'Zorro', 'Zebra', 'Perro', 'Mesa', 'Casa', 'Barco', 'Zoológico', 'Zanahoria']
+        };
+        
         // Actualizar barra de progreso
         function actualizarProgreso() {
             let porcentaje = (letrasVistas.length / totalLetras) * 100;
             $('#progreso-barra').css('width', porcentaje + '%');
+        }
+        
+        // Generar opciones para la actividad
+        function generarOpciones(letra) {
+            // Obtener todas las opciones disponibles para la letra
+            let todasOpciones = opcionesPorLetra[letra] || [`${letra}palabra`, 'Palabra 2', 'Palabra 3', 'Palabra 4', 'Palabra 5'];
+            
+            // Obtener palabras que empiezan con la letra
+            let opcionesCorrectas = todasOpciones.filter(palabra => 
+                palabra.toLowerCase().startsWith(letra.toLowerCase())
+            );
+            
+            // Obtener palabras incorrectas (que no empiezan con la letra)
+            let opcionesIncorrectas = todasOpciones.filter(palabra => 
+                !palabra.toLowerCase().startsWith(letra.toLowerCase())
+            );
+            
+            // Si no hay suficientes opciones correctas, generar algunas
+            while (opcionesCorrectas.length < configActual.seleccionesRequeridas) {
+                opcionesCorrectas.push(`${letra}${Math.random().toString(36).substring(2, 7)}`);
+            }
+            
+            // Tomar las opciones requeridas según el nivel
+            let correctas = opcionesCorrectas.slice(0, configActual.seleccionesRequeridas);
+            let incorrectas = opcionesIncorrectas.slice(0, configActual.opciones - configActual.seleccionesRequeridas);
+            
+            // Combinar y mezclar las opciones
+            let opciones = [...correctas, ...incorrectas];
+            return shuffleArray(opciones);
+        }
+        
+        // Generar HTML para las opciones
+        function generarOpcionesHTML(letra) {
+            let opciones = generarOpciones(letra);
+            let opcionesHTML = '';
+            
+            // Limpiar el contenedor
+            $('#options-container').empty();
+            
+            // Determinar la clase de columna según la cantidad de opciones
+            let colClass = configActual.opciones <= 3 ? 'col-md-4' : 'col-md-3';
+            
+            opciones.forEach(opcion => {
+                let esCorrecta = opcion.toLowerCase().startsWith(letra.toLowerCase());
+                
+                opcionesHTML = `
+                    <div class="${colClass} mb-2">
+                        <button class="btn btn-outline-primary btn-block btn-opcion py-3" 
+                                data-correcta="${esCorrecta}"
+                                data-texto="${opcion}">
+                            ${opcion}
+                        </button>
+                    </div>
+                `;
+                
+                $('#options-container').append(opcionesHTML);
+            });
+            
+            // Reiniciar selecciones
+            selectedOptions = [];
+            
+            // Actualizamos UI según el nivel
+            if (nivel === 'dificil') {
+                $('#selection-required').text('las palabras');
+                $('#selection-counter').show();
+                $('#selected-count').text('0');
+                $('#required-count').text(configActual.seleccionesRequeridas);
+                $('#btn-check-answers').hide();
+            } else {
+                $('#selection-required').text('la palabra');
+                $('#selection-counter').hide();
+            }
+        }
+        
+        // Iniciar temporizador
+        function iniciarTemporizador() {
+            if (configActual.tiempoRespuesta > 0) {
+                // Mostrar el contenedor del temporizador
+                $('#timer-container').show();
+                
+                // Inicializar tiempo
+                timeLeft = configActual.tiempoRespuesta;
+                $('#countdown-timer').text(timeLeft);
+                
+                // Limpiar temporizador anterior si existe
+                if (countdownTimer) {
+                    clearInterval(countdownTimer);
+                }
+                
+                // Crear nuevo temporizador
+                countdownTimer = setInterval(function() {
+                    timeLeft--;
+                    $('#countdown-timer').text(timeLeft);
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(countdownTimer);
+                        
+                        // Se acabó el tiempo - marcar como incorrecto
+                        $('.btn-opcion').prop('disabled', true);
+                        
+                        // Mostrar respuestas correctas
+                        $('.btn-opcion[data-correcta="true"]').removeClass('btn-outline-primary').addClass('btn-success');
+                        
+                        $('#feedback-container').html('<div class="alert alert-danger"><i class="fas fa-times-circle"></i> ¡Se acabó el tiempo! Las respuestas correctas han sido resaltadas.</div>').show();
+                        
+                        // Mostrar botón para siguiente letra
+                        $('#btn-siguiente').show();
+                    }
+                }, 1000);
+            } else {
+                $('#timer-container').hide();
+            }
+        }
+        
+        // Detener temporizador
+        function detenerTemporizador() {
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+            }
         }
         
         // Cuando se hace click en una letra
@@ -422,29 +646,22 @@
             });
             
             // Configurar las opciones para la actividad
-            let opciones = opcionesPorLetra[letra] || [palabra, 'Palabra 2', 'Palabra 3'];
-            opciones = shuffleArray(opciones);
-            
-            $('.btn-opcion').each(function(index) {
-                $(this).text(opciones[index]);
-                if (opciones[index] === palabra) {
-                    $(this).data('correcta', true);
-                } else {
-                    $(this).data('correcta', false);
-                }
-            });
+            generarOpcionesHTML(letra);
             
             // Reiniciar el estado de la actividad
-            $('.btn-opcion').removeClass('btn-success btn-danger').addClass('btn-outline-primary').prop('disabled', false);
             $('#feedback-container').hide().removeClass('alert-success alert-danger').empty();
             $('#btn-siguiente').hide();
+            $('#btn-check-answers').hide();
             
-            // Si no hay pistas en niveles medio y difícil, ocultar algunas ayudas
-            if (!configActual.pistas && nivel !== 'facil') {
-                if (nivel === 'dificil') {
-                    $('#ejemplo-palabra').hide(); // Ocultar palabra ejemplo en modo difícil
-                }
+            // Aplicar configuración basada en nivel
+            if (!configActual.mostrarPalabra) {
+                $('#ejemplo-palabra').hide();
+            } else {
+                $('#ejemplo-palabra').show();
             }
+            
+            // Iniciar temporizador si corresponde al nivel
+            iniciarTemporizador();
             
             // Marcar como vista si es la primera vez
             if (!letrasVistas.includes(letra)) {
@@ -454,31 +671,118 @@
         });
         
         // Cuando se selecciona una opción en la actividad
-        $('.btn-opcion').click(function() {
-            let esCorrecta = $(this).data('correcta');
+        $(document).on('click', '.btn-opcion', function() {
+            let esCorrecta = $(this).data('correcta') === true;
+            let opcionTexto = $(this).data('texto');
+            
+            if (nivel === 'dificil') {
+                // En nivel difícil permitimos selección múltiple
+                if (!$(this).hasClass('selected') && selectedOptions.length < configActual.seleccionesRequeridas) {
+                    // Seleccionar esta opción
+                    $(this).addClass('selected');
+                    selectedOptions.push({
+                        elemento: $(this),
+                        texto: opcionTexto,
+                        correcta: esCorrecta
+                    });
+                    
+                    // Actualizar contador
+                    $('#selected-count').text(selectedOptions.length);
+                    
+                    // Si ya seleccionamos todas las requeridas, mostrar botón de verificar
+                    if (selectedOptions.length === configActual.seleccionesRequeridas) {
+                        $('#btn-check-answers').show();
+                    }
+                } else if ($(this).hasClass('selected')) {
+                    // Deseleccionar esta opción
+                    $(this).removeClass('selected');
+                    selectedOptions = selectedOptions.filter(opt => opt.texto !== opcionTexto);
+                    
+                    // Actualizar contador
+                    $('#selected-count').text(selectedOptions.length);
+                    
+                    // Ocultar botón de verificar si ya no tenemos suficientes selecciones
+                    if (selectedOptions.length < configActual.seleccionesRequeridas) {
+                        $('#btn-check-answers').hide();
+                    }
+                }
+            } else {
+                // En niveles fácil y medio, selección única con respuesta inmediata
+                
+                // Detener temporizador
+                detenerTemporizador();
+                
+                // Deshabilitar todas las opciones
+                $('.btn-opcion').prop('disabled', true);
+                
+                if (esCorrecta) {
+                    // Respuesta correcta
+                    $(this).removeClass('btn-outline-primary').addClass('btn-success');
+                    $('#feedback-container').html(`<div class="alert alert-success"><i class="fas fa-check-circle"></i> ¡Correcto! +${configActual.puntosPorRespuesta} puntos</div>`).show();
+                    puntuacion += configActual.puntosPorRespuesta;
+                    $('.puntaje-valor').text(puntuacion);
+                } else {
+                    // Respuesta incorrecta
+                    $(this).removeClass('btn-outline-primary').addClass('btn-danger');
+                    $('.btn-opcion[data-correcta="true"]').removeClass('btn-outline-primary').addClass('btn-success');
+                    $('#feedback-container').html('<div class="alert alert-danger"><i class="fas fa-times-circle"></i> Incorrecto. La respuesta correcta ha sido resaltada.</div>').show();
+                }
+                
+                // Mostrar botón para siguiente letra
+                $('#btn-siguiente').show();
+            }
+        });
+        
+        // Botón para verificar respuestas (solo en nivel difícil)
+        $('#btn-check-answers').click(function() {
+            // Detener temporizador
+            detenerTemporizador();
             
             // Deshabilitar todas las opciones
             $('.btn-opcion').prop('disabled', true);
             
-            if (esCorrecta) {
-                // Respuesta correcta
-                $(this).removeClass('btn-outline-primary').addClass('btn-success');
-                $('#feedback-container').html('<div class="alert alert-success"><i class="fas fa-check-circle"></i> ¡Correcto! +' + configActual.puntosPorRespuesta + ' puntos</div>').show();
+            // Contar respuestas correctas
+            let correctas = selectedOptions.filter(opt => opt.correcta).length;
+            
+            // Resaltar selecciones
+            selectedOptions.forEach(opt => {
+                if (opt.correcta) {
+                    opt.elemento.removeClass('btn-outline-primary selected').addClass('btn-success');
+                } else {
+                    opt.elemento.removeClass('btn-outline-primary selected').addClass('btn-danger');
+                }
+            });
+            
+            // Mostrar respuestas correctas que no fueron seleccionadas
+            $('.btn-opcion[data-correcta="true"]').not('.btn-success').removeClass('btn-outline-primary').addClass('btn-success');
+            
+            if (correctas === configActual.seleccionesRequeridas) {
+                // Todas correctas
+                $('#feedback-container').html(`<div class="alert alert-success"><i class="fas fa-check-circle"></i> ¡Correcto! Has seleccionado ${correctas} palabras correctas. +${configActual.puntosPorRespuesta} puntos</div>`).show();
                 puntuacion += configActual.puntosPorRespuesta;
-                $('.puntaje-valor').text(puntuacion);
+            } else if (correctas > 0) {
+                // Algunas correctas
+                $('#feedback-container').html(`<div class="alert alert-warning"><i class="fas fa-exclamation-circle"></i> ¡Parcialmente correcto! Has seleccionado ${correctas} de ${configActual.seleccionesRequeridas} palabras correctas. +${correctas * 5} puntos</div>`).show();
+                puntuacion += correctas * 5;
             } else {
-                // Respuesta incorrecta
-                $(this).removeClass('btn-outline-primary').addClass('btn-danger');
-                $('.btn-opcion[data-correcta="true"]').removeClass('btn-outline-primary').addClass('btn-success');
-                $('#feedback-container').html('<div class="alert alert-danger"><i class="fas fa-times-circle"></i> Incorrecto. La respuesta correcta ha sido resaltada.</div>').show();
+                // Ninguna correcta
+                $('#feedback-container').html(`<div class="alert alert-danger"><i class="fas fa-times-circle"></i> Incorrecto. No has seleccionado ninguna palabra correcta.</div>`).show();
             }
+            
+            // Actualizar puntuación
+            $('.puntaje-valor').text(puntuacion);
             
             // Mostrar botón para siguiente letra
             $('#btn-siguiente').show();
+            // Ocultar botón de verificar
+            $(this).hide();
         });
         
         // Botón de siguiente letra
         $('#btn-siguiente').click(function() {
+            // Detener temporizador si está activo
+            detenerTemporizador();
+            
             $('#letraModal').modal('hide');
             
             // Encontrar la siguiente letra no vista
@@ -509,6 +813,11 @@
                     });
                 }, 500);
             }
+        });
+        
+        // Evento cierre del modal para detener temporizador
+        $('#letraModal').on('hidden.bs.modal', function () {
+            detenerTemporizador();
         });
         
         // Función para reproducir sonido
